@@ -8,6 +8,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "parcel": "^1.12.3",
     "react": "^16.8.1",
     "react-dom": "^16.8.1"
   },
