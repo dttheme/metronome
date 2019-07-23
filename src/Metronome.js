@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Metronome.css";
 import click1 from "./click1.wav";
 import click2 from "./click2.wav";
@@ -14,16 +14,36 @@ const Metronome = () => {
   const _click1 = new Audio(click1);
   const _click2 = new Audio(click2);
 
+  const playClick = () => {
+    if (metronome.count % metronome.beatsPerMeasure === 0) {
+      _click1.play();
+    } else {
+      _click2.play();
+    }
+    setMetronome({
+      ...metronome,
+      count: (metronome.count + 1) % metronome.beatsPerMeasure
+    });
+  };
+
+  let timer;
   const startStop = () => {
     if (metronome.playing) {
-      clearInterval(this.timer);
+      clearInterval(timer);
       setMetronome({ ...metronome, playing: false });
     } else {
-      this.timer = setInterval(this.playClick, (60 / metronome.bpm) * 1000);
-      setMetronome({ ...metronome, count: 0, playing: true }, this.playClick);
+      timer = setInterval(playClick, (60 / metronome.bpm) * 1000);
+      setMetronome({ ...metronome, count: 0, playing: true }, playClick);
     }
     _click1.play();
   };
+
+  // useEffect(() => {
+  //   let interval = null;
+  //   if (metronome.playing) {
+  //     interval = setInterval(() => {});
+  //   }
+  // });
 
   const handleBpmChange = e => {
     const bpm = e.target.value;
