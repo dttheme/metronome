@@ -1,72 +1,78 @@
-import React, { useState, useEffect } from "react";
+import React, { Component } from "react";
 import "./Metronome.css";
 import click1 from "./click1.wav";
 import click2 from "./click2.wav";
 
-const Metronome = () => {
-  const [metronome, setMetronome] = useState({
-    playing: false,
-    count: 0,
-    bpm: 100,
-    beatsPerMeasure: 4
-  });
+class Metronome extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      playing: false,
+      count: 0,
+      bpm: 100,
+      beatsPerMeasure: 4
+    };
+    this.click1 = new Audio(click1);
+    this.click2 = new Audio(click2);
+  }
 
-  const _click1 = new Audio(click1);
-  const _click2 = new Audio(click2);
-
-  const playClick = () => {
-    if (metronome.count % metronome.beatsPerMeasure === 0) {
-      _click1.play();
+  playClick = () => {
+    const { count, beatsPerMeasure } = this.state;
+    if (count % beatsPerMeasure === 0) {
+      this.click1.play();
     } else {
-      _click2.play();
+      this.click2.play();
     }
-    setMetronome({
-      ...metronome,
-      count: (metronome.count + 1) % metronome.beatsPerMeasure
-    });
+    this.setState(prevState => ({
+      count: (prevState.count + 1) % prevState.beatsPerMeasure
+    }));
   };
 
-  let timer;
-  const startStop = () => {
-    if (metronome.playing) {
-      clearInterval(timer);
-      setMetronome({ ...metronome, playing: false });
+  startStop = () => {
+    if (this.state.playing) {
+      clearInterval(this.timer);
+      this.setState({ playing: false });
     } else {
-      timer = setInterval(playClick, (60 / metronome.bpm) * 1000);
-      setMetronome({ ...metronome, count: 0, playing: true }, playClick);
+      this.timer = setInterval(this.playClick, (60 / this.state.bpm) * 1000);
+      this.setState({ count: 0, playing: true }, this.playClick);
     }
-    _click1.play();
   };
 
-  // useEffect(() => {
-  //   let interval = null;
-  //   if (metronome.playing) {
-  //     interval = setInterval(() => {});
-  //   }
-  // });
-
-  const handleBpmChange = e => {
+  handleBpmChange = e => {
     const bpm = e.target.value;
-    setMetronome({ ...metronome, bpm });
+    if (this.state.playing) {
+      // stop timer
+      clearInterval(this.timer);
+      // start new timer
+      this.timer = setInterval(this.playClick, (60 / bpm) * 1000);
+      // set new bpm, reset counter
+      this.setState({
+        count: 0,
+        bpm
+      });
+    } else {
+      // update bpm
+      this.setState({ bpm });
+    }
   };
-
-  return (
-    <div className="metronome">
-      <div className="bpm-slider">
-        <div>{metronome.bpm} BPM</div>
-        <input
-          type="range"
-          min="60"
-          max="240"
-          value={metronome.bpm}
-          onChange={handleBpmChange}
-        />
+  render() {
+    const { playing, bpm } = this.state;
+    return (
+      <div className="metronome">
+        <div className="bpm-slider">
+          <div>{bpm} BPM</div>
+          <input
+            type="range"
+            min="60"
+            max="240"
+            value={bpm}
+            onChange={this.handleBpmChange}
+          />
+        </div>
+        <button onClick={this.startStop}>{playing ? "Stop" : "Start"}</button>
       </div>
-      <button onClick={startStop}>
-        {metronome.playing ? "Stop" : "Start"}
-      </button>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default Metronome;
